@@ -41,6 +41,11 @@ func processUserInput(name *string, mins *int) {
 	*mins, _ = strconv.Atoi(input_arr[1])
 }
 
+func displayHelp() {
+	output("Enter timer details in format \">>> timer-name minutes\"\n")
+	output("where timer-name is the name and minutes is the length in minutes\n")
+}
+
 func promptForNewTimer() {
 	output(">>> ")
 	var name string
@@ -52,5 +57,6 @@ func promptForNewTimer() {
 }
 
 func main() {
+	displayHelp()
 	promptForNewTimer()
 }
