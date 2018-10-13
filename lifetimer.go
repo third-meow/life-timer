@@ -15,12 +15,13 @@ func errCheck(e error) {
 	}
 }
 
-func timekeeper(name string, mins int, done chan string) {
+func timekeeper(name string, mins int) {
 	for i := 0; i < mins; i++ {
 		minTimer := time.NewTimer(time.Second)
 		<-minTimer.C
 	}
-	done <- name
+	fmt.Printf("Timer %s has finished\n", name)
+	promptForNewTimer()
 }
 
 func processUserInput(name *string, mins *int) {
@@ -35,16 +36,16 @@ func processUserInput(name *string, mins *int) {
 	*mins, _ = strconv.Atoi(input_arr[1])
 }
 
-func main() {
+func promptForNewTimer() {
 	fmt.Println("Enter timer details \t\t\t\t Format: 'name length'")
 	var name string
 	var mins int
 	processUserInput(&name, &mins)
 
-	done_reports := make(chan string)
+	go timekeeper(name, mins)
+	promptForNewTimer()
+}
 
-	go timekeeper(name, mins, done_reports)
-	dt := <-done_reports
-	fmt.Println(dt)
-
+func main() {
+	promptForNewTimer()
 }
