@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -29,16 +30,32 @@ func timekeeper(name string, mins int) {
 	promptForNewTimer()
 }
 
-func processUserInput(name *string, mins *int) {
+func processUserInput() {
+	//setup regexs
+	help, err := regexp.Compile("[hH][eE][lL][pP]")
+	errCheck(err)
+	quit, err := regexp.Compile("[qQeE][uUxX][iI][tT]")
+	errCheck(err)
+	timerDetails, err := regexp.Compile("([A-z]*)(s*)(d*)$")
+	errCheck(err)
+
 	//read in string from user
 	reader := bufio.NewReader(os.Stdin)
 	input, err := reader.ReadString('\n')
 	errCheck(err)
 
-	//split input string into
-	input_arr := strings.Fields(input)
-	*name = input_arr[0]
-	*mins, _ = strconv.Atoi(input_arr[1])
+	if quit.MatchString(input) {
+		os.Exit(3)
+	} else if help.MatchString(input) {
+		displayHelp()
+	} else if timerDetails.MatchString(input) {
+		//split input string into
+		input_arr := strings.Fields(input)
+		name := input_arr[0]
+		mins, err := strconv.Atoi(input_arr[1])
+		errCheck(err)
+		go timekeeper(name, mins)
+	}
 }
 
 func displayHelp() {
@@ -48,15 +65,12 @@ func displayHelp() {
 
 func promptForNewTimer() {
 	output(">>> ")
-	var name string
-	var mins int
-	processUserInput(&name, &mins)
-
-	go timekeeper(name, mins)
+	processUserInput()
 	promptForNewTimer()
 }
 
 func main() {
+
 	displayHelp()
 	promptForNewTimer()
 }
