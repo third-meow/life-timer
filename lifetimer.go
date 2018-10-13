@@ -49,7 +49,7 @@ func processUserInput() {
 	if quit.MatchString(input) {
 		os.Exit(3)
 	} else if help.MatchString(input) {
-		displayHelp()
+		displayHelp(true)
 	} else if timerDetails.MatchString(input) {
 		//split input string into
 		input_arr := strings.Fields(input)
@@ -62,9 +62,11 @@ func processUserInput() {
 	}
 }
 
-func displayHelp() {
-	output("Enter timer details in format \">>> timer-name minutes\"\n")
-	output("where timer-name is the name and minutes is the length in minutes\n")
+func displayHelp(full bool) {
+	output("Enter timer details in format 'timer-name minutes'\n")
+	if full {
+		output("Other commands are:\n\texit - exit program\n\tquit /\n\thelp - display this help texti\n")
+	}
 }
 
 func promptForNewTimer() {
@@ -75,6 +77,6 @@ func promptForNewTimer() {
 
 func main() {
 
-	displayHelp()
+	displayHelp(false)
 	promptForNewTimer()
 }
