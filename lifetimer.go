@@ -15,12 +15,17 @@ func errCheck(e error) {
 	}
 }
 
+//just prints to terminal for now
+func output(s string) {
+	fmt.Println(s)
+}
+
 func timekeeper(name string, mins int) {
 	for i := 0; i < mins; i++ {
 		minTimer := time.NewTimer(time.Second)
 		<-minTimer.C
 	}
-	fmt.Printf("Timer %s has finished\n", name)
+	output(fmt.Sprintf("Timer %s has finished", name))
 	promptForNewTimer()
 }
 
@@ -37,7 +42,7 @@ func processUserInput(name *string, mins *int) {
 }
 
 func promptForNewTimer() {
-	fmt.Println("Enter timer details \t\t\t\t Format: 'name length'")
+	output(fmt.Sprintf("Enter timer details \t\t\t\t Format: 'name length'"))
 	var name string
 	var mins int
 	processUserInput(&name, &mins)
