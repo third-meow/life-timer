@@ -21,6 +21,7 @@ func timekeeper(name string, mins int) {
 		<-minTimer.C
 	}
 	fmt.Printf("Timer %s has finished\n", name)
+	promptForNewTimer()
 }
 
 func processUserInput(name *string, mins *int) {
