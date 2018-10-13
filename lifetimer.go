@@ -15,12 +15,12 @@ func errCheck(e error) {
 	}
 }
 
-func timekeeper(name string, mins int, done chan string) {
+func timekeeper(name string, mins int) {
 	for i := 0; i < mins; i++ {
 		minTimer := time.NewTimer(time.Second)
 		<-minTimer.C
 	}
-	done <- name
+	fmt.Printf("Timer %s has finished\n", name)
 }
 
 func processUserInput(name *string, mins *int) {
