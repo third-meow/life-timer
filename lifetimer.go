@@ -57,6 +57,8 @@ func processUserInput() {
 		mins, err := strconv.Atoi(input_arr[1])
 		errCheck(err)
 		go timekeeper(name, mins)
+	} else {
+		output("Command not found, type 'help' for options\n")
 	}
 }
 
