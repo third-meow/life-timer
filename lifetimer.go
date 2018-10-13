@@ -12,7 +12,9 @@ import (
 
 func errCheck(e error) {
 	if e != nil {
-		fmt.Println(e)
+		fmt.Print("\n")
+		fmt.Print(e)
+		fmt.Print("\n")
 	}
 }
 
