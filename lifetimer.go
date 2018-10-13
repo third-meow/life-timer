@@ -42,6 +42,7 @@ func promptForNewTimer() {
 	processUserInput(&name, &mins)
 
 	go timekeeper(name, mins)
+	promptForNewTimer()
 }
 
 func main() {
