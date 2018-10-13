@@ -38,7 +38,7 @@ func processUserInput() {
 	errCheck(err)
 	quit, err := regexp.Compile("[qQeE][uUxX][iI][tT]")
 	errCheck(err)
-	timerDetails, err := regexp.Compile("([A-z]*)(s*)(d*)$")
+	timerDetails, err := regexp.Compile("([A-z]*)\\s+\\d+")
 	errCheck(err)
 
 	//read in string from user
