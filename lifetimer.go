@@ -35,16 +35,15 @@ func processUserInput(name *string, mins *int) {
 	*mins, _ = strconv.Atoi(input_arr[1])
 }
 
-func main() {
+func promptForNewTimer() {
 	fmt.Println("Enter timer details \t\t\t\t Format: 'name length'")
 	var name string
 	var mins int
 	processUserInput(&name, &mins)
 
-	done_reports := make(chan string)
+	go timekeeper(name, mins)
+}
 
-	go timekeeper(name, mins, done_reports)
-	dt := <-done_reports
-	fmt.Println(dt)
-
+func main() {
+	promptForNewTimer()
 }
