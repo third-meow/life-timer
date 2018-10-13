@@ -36,7 +36,7 @@ func processUserInput(name *string, mins *int) {
 }
 
 func main() {
-	fmt.Println("Enter timer details \t\t format: 'name length'")
+	fmt.Println("Enter timer details \t\t\t\t Format: 'name length'")
 	var name string
 	var mins int
 	processUserInput(&name, &mins)
