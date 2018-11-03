@@ -10,6 +10,18 @@ import (
 	"time"
 )
 
+type timekeeper struct {
+	name               string
+	duration, minCount int
+}
+
+type commandRegexSet struct {
+	help, quit, timerDetails *regexp.Regexp
+}
+
+var commands commandRegexSet
+
+
 //if error exists, print it
 func errCheck(e error) {
 	if e != nil {
@@ -39,28 +51,25 @@ func timekeeper(name string, mins int) {
 	promptForCommand()
 }
 
-func processUserInput() {
-	//setup regexs
-	help, err := regexp.Compile("[hH][eE][lL][pP]")
-	errCheck(err)
-	quit, err := regexp.Compile("[qQeE][uUxX][iI][tT]")
-	errCheck(err)
-	timerDetails, err := regexp.Compile("([A-z]*)\\s+\\d+")
-	errCheck(err)
+func promptAndProcessInput() {
+	//print prompt
+	output(">>> ")
 
-	//read in string from user
+	//read text
 	reader := bufio.NewReader(os.Stdin)
 	input, err := reader.ReadString('\n')
 	errCheck(err)
 
+	commandType := commands.type(input)
+
 	//classify user input
-	if quit.MatchString(input) {
+	if commandType == "quit" {
 		//exit program with status 3
 		os.Exit(3)
-	} else if help.MatchString(input) {
+	} else if commandType == "help" {
 		//display (full) help text
 		displayHelp(true)
-	} else if timerDetails.MatchString(input) {
+	} else if commandType == "timerDetails" {
 		//split input string into name and mins
 		input_arr := strings.Fields(input)
 		name := input_arr[0]
@@ -83,22 +92,24 @@ func displayHelp(full bool) {
 	}
 }
 
-//give prompt to user for command
-func promptForCommand() {
-	//print prompt
-	output(">>> ")
 
-	//process user's input
-	processUserInput()
-
-	//prompt again
-	promptForCommand()
+func setupRegexs() {
+	var err error
+	commands.help, err = regexp.Compile("[hH][eE][lL][pP]")
+	errCheck(err)
+	commands.quit, err = regexp.Compile("[qQeE][uUxX][iI][tT]")
+	errCheck(err)
+	commands.timerDetails, err = regexp.Compile("([A-z]*)\\s+\\d+")
+	errCheck(err)
 }
 
-func main() {
-	//start by displaying (minimal) help text
-	displayHelp(false)
 
-	//prompt for timer
-	promptForCommand()
+
+func main() {
+	//read in string from user
+	//start by displaying (minimal) help text
+	//displayHelp(false)
+	//while true {
+	//	promptAndProcessInput()
+	//}
 }
