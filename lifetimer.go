@@ -15,12 +15,36 @@ type timekeeper struct {
 	duration, minCount int
 }
 
+var timekeepers []timekeeper
+
+func (tk *timekeeper) run() {
+	//wait for the duration
+	for tk.minCount = 0; tk.minCount < tk.duration; tk.minCount++ {
+		minTimer := time.NewTimer(time.Second)
+		<-minTimer.C
+	}
+
+	//print timer finished message
+	output(fmt.Sprintf("\nTimer %s has finished\n", tk.name))
+}
+
 type commandRegexSet struct {
 	help, quit, timerDetails *regexp.Regexp
 }
 
 var commands commandRegexSet
 
+func (crs *commandRegexSet) commandType(in string) string {
+	if crs.quit.MatchString(in) {
+		return "quit"
+	} else if crs.help.MatchString(in) {
+		return "help"
+	} else if crs.timerDetails.MatchString(in) {
+		return "timerDetails"
+	} else {
+		return ""
+	}
+}
 
 //if error exists, print it
 func errCheck(e error) {
@@ -36,21 +60,18 @@ func output(s string) {
 	fmt.Print(s)
 }
 
-//main timer function
-func timekeeper(name string, mins int) {
-	//wait for the duration specifed by mins
-	for i := 0; i < mins; i++ {
-		minTimer := time.NewTimer(time.Second)
-		<-minTimer.C
-	}
+func newTimekeeper(details string) {
+	detailsArr := strings.Fields(details)
+	name := detailsArr[0]
+	mins, err := strconv.Atoi(detailsArr[1])
+	errCheck(err)
 
-	//print timer finished message
-	output(fmt.Sprintf("\nTimer %s has finished\n", name))
-
-	//prompt user for new tiemer
-	promptForCommand()
+	tempTimekeeper := timekeeper{name: name, duration: mins}
+	timekeepers = append(timekeepers, tempTimekeeper)
+	timekeepers[len(timekeepers)-1].run()
 }
 
+//prompt user for input, then process any input given
 func promptAndProcessInput() {
 	//print prompt
 	output(">>> ")
@@ -60,24 +81,21 @@ func promptAndProcessInput() {
 	input, err := reader.ReadString('\n')
 	errCheck(err)
 
-	commandType := commands.type(input)
+	commandType := commands.commandType(input)
 
 	//classify user input
 	if commandType == "quit" {
 		//exit program with status 3
 		os.Exit(3)
+
 	} else if commandType == "help" {
 		//display (full) help text
 		displayHelp(true)
-	} else if commandType == "timerDetails" {
-		//split input string into name and mins
-		input_arr := strings.Fields(input)
-		name := input_arr[0]
-		mins, err := strconv.Atoi(input_arr[1])
-		errCheck(err)
 
-		//start new timer
-		go timekeeper(name, mins)
+	} else if commandType == "timerDetails" {
+		//start timer
+		newTimekeeper(input)
+
 	} else {
 		//if user input does not match any command:
 		output("Command not found, type 'help' for options\n")
@@ -92,7 +110,6 @@ func displayHelp(full bool) {
 	}
 }
 
-
 func setupRegexs() {
 	var err error
 	commands.help, err = regexp.Compile("[hH][eE][lL][pP]")
@@ -103,13 +120,10 @@ func setupRegexs() {
 	errCheck(err)
 }
 
-
-
 func main() {
-	//read in string from user
-	//start by displaying (minimal) help text
-	//displayHelp(false)
-	//while true {
-	//	promptAndProcessInput()
-	//}
+	setupRegexs()
+	displayHelp(false)
+	for {
+		promptAndProcessInput()
+	}
 }
