@@ -10,9 +10,12 @@ import (
 	"time"
 )
 
+//-----------------------------------------------------------------------------
+
 type timekeeper struct {
 	name               string
 	duration, minCount int
+	done               bool
 }
 
 var timekeepers []timekeeper
@@ -23,15 +26,31 @@ func (tk *timekeeper) run() {
 		minTimer := time.NewTimer(time.Second)
 		<-minTimer.C
 	}
+	tk.done = true
 
 	//print timer finished message
 	output(fmt.Sprintf("\nTimer %s has finished\n", tk.name))
+
 }
 
 func (tk *timekeeper) status() [2]int {
 	status := [2]int{tk.minCount, tk.duration}
 	return status
 }
+
+func newTimekeeper(details string) {
+	detailsArr := strings.Fields(details)
+	name := detailsArr[0]
+	mins, err := strconv.Atoi(detailsArr[1])
+	errCheck(err)
+
+	tempTimekeeper := timekeeper{name: name, duration: mins}
+	timekeepers = append(timekeepers, tempTimekeeper)
+	go timekeepers[len(timekeepers)-1].run()
+}
+
+//-----------------------------------------------------------------------------
+
 type commandRegexSet struct {
 	help, quit, timerDetails *regexp.Regexp
 }
@@ -50,6 +69,19 @@ func (crs *commandRegexSet) commandType(in string) string {
 	}
 }
 
+//compile the regexs
+func setupRegexs() {
+	var err error
+	commands.help, err = regexp.Compile("[hH][eE][lL][pP]")
+	errCheck(err)
+	commands.quit, err = regexp.Compile("[qQeE][uUxX][iI][tT]")
+	errCheck(err)
+	commands.timerDetails, err = regexp.Compile("([A-z]*)\\s+\\d+")
+	errCheck(err)
+}
+
+//-----------------------------------------------------------------------------
+
 //if error exists, print it
 func errCheck(e error) {
 	if e != nil {
@@ -64,16 +96,15 @@ func output(s string) {
 	fmt.Print(s)
 }
 
-func newTimekeeper(details string) {
-	detailsArr := strings.Fields(details)
-	name := detailsArr[0]
-	mins, err := strconv.Atoi(detailsArr[1])
-	errCheck(err)
-
-	tempTimekeeper := timekeeper{name: name, duration: mins}
-	timekeepers = append(timekeepers, tempTimekeeper)
-	timekeepers[len(timekeepers)-1].run()
+//print help text
+func displayHelp(full bool) {
+	output("Enter timer details in format 'timer-name minutes'\n")
+	if full {
+		output("Other commands are:\n\texit - exit program\n\tquit /\n\thelp - display this help texti\n")
+	}
 }
+
+//-----------------------------------------------------------------------------
 
 //prompt user for input, then process any input given
 func promptAndProcessInput() {
@@ -141,8 +172,10 @@ func removeInactiveTimers() {
 func main() {
 	setupRegexs()
 	displayHelp(false)
+	promptAndProcessInput()
 	for {
 		displayTimerStates()
 		removeInactiveTimers()
 	}
+
 }
