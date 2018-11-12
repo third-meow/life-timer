@@ -8,7 +8,33 @@ import (
 	"strconv"
 	"strings"
 	"time"
+	ui "uilive"
 )
+
+//-----------------------------------------------------------------------------
+
+var writer *ui.Writer
+
+//create and start writer
+func setupOutput() {
+	writer = ui.New()
+	writer.Start()
+}
+
+//shutdown writer
+func shutdownOutput() {
+	writer.Stop()
+}
+
+//just prints to terminal
+func output(s string) {
+	fmt.Fprintf(writer.Bypass(), s)
+}
+
+//prints to terminal live
+func outputLive(s string) {
+	fmt.Fprintf(writer, s)
+}
 
 //-----------------------------------------------------------------------------
 
@@ -91,11 +117,6 @@ func errCheck(e error) {
 	}
 }
 
-//just prints to terminal for now
-func output(s string) {
-	fmt.Print(s)
-}
-
 //print help text
 func displayHelp(full bool) {
 	output("Enter timer details in format 'timer-name minutes'\n")
@@ -140,19 +161,20 @@ func promptAndProcessInput() {
 //print a status bar
 func printStatusBar(status [2]int) {
 	bar := "|"
-	for i := 0; i < status[0]; i++ {
+	for i := 0; i < (status[0] + 1); i++ {
 		bar = bar + "#"
 	}
 	remaining := status[1] - status[0]
-	for i := 0; i < remaining; i++ {
+	for i := 0; i < (remaining - 1); i++ {
 		bar = bar + "~"
 	}
 	bar = bar + "|\n"
-	output(bar)
+	outputLive(bar)
 }
 
 //display status bars
 func displayTimerStates() {
+	removeInactiveTimers()
 	for _, tk := range timekeepers {
 		status := tk.status()
 		printStatusBar(status)
@@ -170,12 +192,13 @@ func removeInactiveTimers() {
 }
 
 func main() {
+	setupOutput()
 	setupRegexs()
 	displayHelp(false)
 	promptAndProcessInput()
 	for {
 		displayTimerStates()
-		removeInactiveTimers()
+		time.Sleep(time.Second / 4)
 	}
 
 }
