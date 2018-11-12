@@ -28,6 +28,10 @@ func (tk *timekeeper) run() {
 	output(fmt.Sprintf("\nTimer %s has finished\n", tk.name))
 }
 
+func (tk *timekeeper) status() [2]int {
+	status := [2]int{tk.minCount, tk.duration}
+	return status
+}
 type commandRegexSet struct {
 	help, quit, timerDetails *regexp.Regexp
 }
@@ -102,11 +106,25 @@ func promptAndProcessInput() {
 	}
 }
 
-//print help text
-func displayHelp(full bool) {
-	output("Enter timer details in format 'timer-name minutes'\n")
-	if full {
-		output("Other commands are:\n\texit - exit program\n\tquit /\n\thelp - display this help texti\n")
+//print a status bar
+func printStatusBar(status [2]int) {
+	bar := "|"
+	for i := 0; i < status[0]; i++ {
+		bar = bar + "#"
+	}
+	remaining := status[1] - status[0]
+	for i := 0; i < remaining; i++ {
+		bar = bar + "~"
+	}
+	bar = bar + "|\n"
+	output(bar)
+}
+
+//display status bars
+func displayTimerStates() {
+	for _, tk := range timekeepers {
+		status := tk.status()
+		printStatusBar(status)
 	}
 }
 
@@ -124,7 +142,7 @@ func main() {
 	setupRegexs()
 	displayHelp(false)
 	for {
-		promptAndProcessInput()
+		displayTimerStates()
 		removeInactiveTimers()
 	}
 }
