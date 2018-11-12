@@ -110,14 +110,14 @@ func displayHelp(full bool) {
 	}
 }
 
-func setupRegexs() {
-	var err error
-	commands.help, err = regexp.Compile("[hH][eE][lL][pP]")
-	errCheck(err)
-	commands.quit, err = regexp.Compile("[qQeE][uUxX][iI][tT]")
-	errCheck(err)
-	commands.timerDetails, err = regexp.Compile("([A-z]*)\\s+\\d+")
-	errCheck(err)
+//remove any inactive/finsihed timers
+func removeInactiveTimers() {
+	for i, tk := range timekeepers {
+		if tk.done {
+			timekeepers[i] = timekeepers[len(timekeepers)-1]
+			timekeepers = timekeepers[:len(timekeepers)-1]
+		}
+	}
 }
 
 func main() {
@@ -125,5 +125,6 @@ func main() {
 	displayHelp(false)
 	for {
 		promptAndProcessInput()
+		removeInactiveTimers()
 	}
 }
