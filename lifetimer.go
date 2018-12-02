@@ -41,7 +41,7 @@ func outputLive(s string) {
 type timekeeper struct {
 	name               string
 	duration, minCount int
-	done               bool
+	done, liveDisplay  bool
 }
 
 var timekeepers []timekeeper
@@ -69,8 +69,14 @@ func newTimekeeper(details string) {
 	name := detailsArr[0]
 	mins, err := strconv.Atoi(detailsArr[1])
 	errCheck(err)
+	display := false
+	if len(detailsArr) > 2 {
+		if detailsArr[2] == "-d" || detailsArr[2] == "--display" {
+			display = true
+		}
+	}
 
-	tempTimekeeper := timekeeper{name: name, duration: mins}
+	tempTimekeeper := timekeeper{name: name, duration: mins, liveDisplay: display}
 	timekeepers = append(timekeepers, tempTimekeeper)
 	go timekeepers[len(timekeepers)-1].run()
 }
@@ -102,7 +108,7 @@ func setupRegexs() {
 	errCheck(err)
 	commands.quit, err = regexp.Compile("[qQeE][uUxX][iI][tT]")
 	errCheck(err)
-	commands.timerDetails, err = regexp.Compile("([A-z]*)\\s+\\d+")
+	commands.timerDetails, err = regexp.Compile("[A-z]+\\s+\\d+\\.*")
 	errCheck(err)
 }
 
@@ -121,7 +127,7 @@ func errCheck(e error) {
 func displayHelp(full bool) {
 	output("Enter timer details in format 'timer-name minutes'\n")
 	if full {
-		output("Other commands are:\n\texit - exit program\n\tquit /\n\thelp - display this help texti\n")
+		output("Other commands are:\n\texit - exit program\n\tquit - exit program\n\thelp - display this help texti\n")
 	}
 }
 
@@ -158,27 +164,31 @@ func promptAndProcessInput() {
 	}
 }
 
-//print a status bar
-func printStatusBar(status [2]int) {
+//returns a status bar
+func makeStatusBar(status [2]int) string {
 	bar := "|"
 	for i := 0; i < (status[0] + 1); i++ {
 		bar = bar + "#"
 	}
 	remaining := status[1] - status[0]
 	for i := 0; i < (remaining - 1); i++ {
-		bar = bar + "~"
+		bar = bar + "-"
 	}
-	bar = bar + "|\n"
-	outputLive(bar)
+	bar = bar + "|"
+	return bar
 }
 
 //display status bars
 func displayTimerStates() {
 	removeInactiveTimers()
+	bars := ""
 	for _, tk := range timekeepers {
-		status := tk.status()
-		printStatusBar(status)
+		if tk.liveDisplay {
+			status := tk.status()
+			bars = bars + makeStatusBar(status)
+		}
 	}
+	outputLive(bars + "\n")
 }
 
 //remove any inactive/finsihed timers
@@ -195,10 +205,12 @@ func main() {
 	setupOutput()
 	setupRegexs()
 	displayHelp(false)
-	promptAndProcessInput()
 	for {
-		displayTimerStates()
-		time.Sleep(time.Second / 4)
+		promptAndProcessInput()
+		for len(timekeepers) > 0 {
+			displayTimerStates()
+			time.Sleep(time.Second / 4)
+		}
 	}
 
 }
